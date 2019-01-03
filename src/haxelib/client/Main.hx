@@ -157,6 +157,7 @@ class Main {
 	var site : SiteProxy;
 	var isHaxelibRun : Bool;
 	var alreadyUpdatedVcsDependencies:Map<String,String> = new Map<String,String>();
+	var pass:String;
 
 	function new() {
 		args = Sys.args();
@@ -331,6 +332,14 @@ class Main {
 						}
 						rethrow(e);
 					}
+				case '-pass':
+					pass = args[argcur++];
+					if (pass == null) {
+						print("Missing password argument for -pass");
+						Sys.exit(1);
+					}
+					pass = Md5.encode(pass);
+					print("password: "+pass);
 				case "-notimeout":
 					haxe.remoting.HttpConnection.TIMEOUT = 0;
 				case "-R":
@@ -574,7 +583,8 @@ class Main {
 			print("Please enter the following information for registration");
 			password = doRegister(user);
 		} else {
-			password = readPassword(user);
+			if (pass == null) password = readPassword(user);
+			else password = pass;
 		}
 		site.checkDeveloper(infos.name,user);
 
@@ -623,6 +633,11 @@ class Main {
 		if (haxe.remoting.HttpConnection.TIMEOUT != 0) // don't ignore -notimeout
 			haxe.remoting.HttpConnection.TIMEOUT = 1000;
 		// ask the server to register the sent file
+
+		print("id = " + id);
+		print("user = " + user);
+		print("password = " + password);
+		
 		var msg = site.processSubmit(id,user,password);
 		print(msg);
 	}
